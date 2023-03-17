@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "prepare": "tsc --outFile dist/index.js --module system",
+    "prepare": "tsc --outFile dist/index.js --module amd",
     "test": "jest",
     "all": "npm run lint && npm run prepare && npm run test"
   },
