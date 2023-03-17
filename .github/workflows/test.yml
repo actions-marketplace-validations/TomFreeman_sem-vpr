@@ -24,4 +24,3 @@ jobs:
     - uses: ./
       with:
         github-token: ${{ secrets.token }}
-        tag-prerelease: true
