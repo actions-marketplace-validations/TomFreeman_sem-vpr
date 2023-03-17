@@ -9,7 +9,7 @@ inputs:
     description: 'The prefix to use for the tag'
     required: false
     default: 'v'
-  label-prerelease:
+  tag-prerelease:
     description: 'Should prerelease tags be added to the head branch of the PR?'
     required: false
     default: 'prerelease'

@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import { Versioner, Settings } from './versioner';
 import { getTags, getBranchName, getLabels, tagNewVersion, shouldProceed } from './git';
 
-function buildSettings(labels: string[], prefix: string, branch: string): Settings {
+function buildSettings(labels: string[], prefix: string, branch: string, tagPrerelease: boolean): Settings {
   const settings = {} as Settings;
 
   if (labels.includes('major')) {
@@ -12,7 +12,7 @@ function buildSettings(labels: string[], prefix: string, branch: string): Settin
     settings.minor = true;
   }
 
-  if (labels.includes('pre-release')) {
+  if (tagPrerelease) {
     settings.suffix = branch;
   }
 
@@ -32,7 +32,8 @@ async function run() {
     // Get the tags from the git history
     const tags = await getTags();
     const prefix = core.getInput('prefix');
-    const tagPrerelease = core.getBooleanInput('tag-prerelease');
+    const labels = getLabels();
+    const tagPrerelease = core.getBooleanInput('tag-prerelease') || labels.includes('pre-release');
 
     if (!shouldProceed(tagPrerelease)) {
       return;
@@ -41,9 +42,10 @@ async function run() {
     const githubToken = core.getInput('github-token');
     const branch = getBranchName();
     const settings = buildSettings(
-      getLabels(),
+      labels,
       prefix,
-      branch);
+      branch,
+      tagPrerelease);
 
     const versioner = new Versioner(
       tags, settings);
