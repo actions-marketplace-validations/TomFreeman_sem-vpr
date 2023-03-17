@@ -1,4 +1,4 @@
-import core from '@actions/core';
+import * as core from '@actions/core';
 import { Versioner, Settings } from './versioner';
 import { getTags, getBranchName, getLabels, tagNewVersion } from './git';
 
@@ -40,6 +40,7 @@ async function run() {
     // Tag the new version
     await tagNewVersion(newVersion);
   } catch (err) {
+    console.log("Error: ", err)
     core.setFailed((err as Error).message);
   }
 }

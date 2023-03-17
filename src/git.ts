@@ -8,7 +8,8 @@ const context = github.context;
 export async function getTags() {
   const output = await getExecOutput("git", ["tag", "-l"])
 
-  if (!output.stdout) {
+  if (output.exitCode != 0) {
+    console.log("Fetch tags failed, ${output.stderr}");
     throw new Error("No tags found, ${output.stderr}");
   }
 
