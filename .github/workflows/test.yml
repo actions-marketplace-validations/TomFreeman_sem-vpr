@@ -23,5 +23,4 @@ jobs:
     - run: npm ci
     - uses: ./
       with:
-        milliseconds: 1000
         github-token: ${{ secrets.token }}

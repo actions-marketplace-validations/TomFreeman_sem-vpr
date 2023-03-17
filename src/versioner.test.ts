@@ -1,9 +1,27 @@
-import { Versioner, Settings } from "./versioner";
+import { Versioner, Settings, isSemVer } from "./versioner";
 import { describe, test, expect } from "@jest/globals";
 
 describe("Versioner components", () => {
+    test("Regex is valid", () => {
+        expect(isSemVer.test("1.0.0")).toBe(true);
+        expect(isSemVer.test("1.0.0-preview")).toBe(true);
+        expect(isSemVer.test("v1.0.0-preview.1")).toBe(true);
+        expect(isSemVer.test("blah v1.0.0-preview")).toBe(false);
+        expect(isSemVer.test("nope")).toBe(false);
+    });
+
     test("Versioner should use 0.0.0 if tags is null", () => {
         const versioner = new Versioner(null, null);
+        expect(versioner.getLatestTag()).toBe("0.0.0");
+    });
+
+    test("Versioner should use 0.0.0 if tags is empty", () => {
+        const versioner = new Versioner([], null);
+        expect(versioner.getLatestTag()).toBe("0.0.0");
+    });
+
+    test("Versioner should use 0.0.0 if tags are all invalid", () => {
+        const versioner = new Versioner(["some-other-tag"], null);
         expect(versioner.getLatestTag()).toBe("0.0.0");
     });
 

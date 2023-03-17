@@ -6,6 +6,9 @@ export type Settings = {
   noPrefix: boolean,
 }
 
+// Semver regex, anything that contains three numbers seperated by dots
+export const isSemVer = /^[\w]*(\d+\.)(\d+\.)(\d+)($|-[\w]*)/;
+
 // Versioner wraps the logic for calculating the next version
 export class Versioner {
   tags: string[];
@@ -36,7 +39,9 @@ export class Versioner {
   }
 
   getLatestTag() {
-    if (!this.tags || this.tags.length === 0) {
+    const semverTags = (this.tags || []).filter(tag => isSemVer.test(tag));
+
+    if (!semverTags || semverTags.length === 0) {
       console.log('No tags found, using 0.0.0');
       return '0.0.0';
     } else {
