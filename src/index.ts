@@ -21,6 +21,15 @@ function buildSettings(labels: string[], prefix: string, branch: string, tagPrer
   return settings;
 }
 
+function shouldTagPrerelease(labels: string[]): boolean {
+  const prereleaseSetting = core.getInput('tag-prerelease')
+  if (prereleaseSetting) {
+    return labels.includes('pre-release')
+  } else {
+    return core.getBooleanInput('tag-prerelease') || labels.includes('prerelease');
+  }
+}
+
 // most @actions toolkit packages have async methods
 async function run() {
   try {
@@ -33,7 +42,7 @@ async function run() {
     const tags = await getTags();
     const prefix = core.getInput('prefix');
     const labels = getLabels();
-    const tagPrerelease = core.getBooleanInput('tag-prerelease') || labels.includes('pre-release');
+    const tagPrerelease = shouldTagPrerelease(labels);
 
     if (!shouldProceed(tagPrerelease)) {
       return;
