@@ -2,6 +2,7 @@ import { exec, getExecOutput } from "@actions/exec";
 import * as github from "@actions/github";
 import * as core from "@actions/core";
 import { PullRequestEvent, WebhookEvent } from "@octokit/webhooks-types";
+import { RequestError } from "@octokit/request-error";
 
 const context = github.context;
 
@@ -56,8 +57,8 @@ export async function tagNewVersion(githubToken: string, version: string) {
   const repo = pr.repository.name
 
   const target_sha = pr.action === "closed"
-  ? pr.pull_request.head.sha
-  : GITHUB_SHA;
+    ? pr.pull_request.head.sha
+    : GITHUB_SHA;
 
   const tagCreateResponse = await octokit.rest.git.createTag({
     ...context.repo,
@@ -67,25 +68,38 @@ export async function tagNewVersion(githubToken: string, version: string) {
     type: "commit",
   });
 
-  await octokit.rest.git.createRef({
-    ...context.repo,
-    ref: `refs/tags/${version}`,
-    sha: tagCreateResponse.data.sha,
-  });
+  try {
+    await octokit.rest.git.createRef({
+      ...context.repo,
+      ref: `refs/tags/${version}`,
+      sha: tagCreateResponse.data.sha,
+    });
+  } catch (err) {
+    const httpError = err as RequestError;
+    if (httpError.status == 422) {
+      console.log("Attempting to update tag as it appears to exist")
+      await octokit.rest.git.updateRef({
+        ...context.repo,
+        ref: `refs/tags/${version}`,
+        sha: tagCreateResponse.data.sha,
+        force: true,
+      });
+    }
+  }
 }
 
 const ignoredActions = ["assigned",
-"unassigned",
-"unlabeled",
-"edited",
-"review_requested",
-"review_request_removed",
-"auto_merge_disabled",
-"auto_merge_enabled",
-"milestoned",
-"demilestoned",
-"locked",
-"unlocked",
+  "unassigned",
+  "unlabeled",
+  "edited",
+  "review_requested",
+  "review_request_removed",
+  "auto_merge_disabled",
+  "auto_merge_enabled",
+  "milestoned",
+  "demilestoned",
+  "locked",
+  "unlocked",
 ];
 
 export function shouldProceed(tagPrerelease: boolean) {
