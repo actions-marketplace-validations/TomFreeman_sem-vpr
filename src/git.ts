@@ -1,4 +1,4 @@
-import { getExecOutput } from "@actions/exec";
+import { exec, getExecOutput } from "@actions/exec";
 import * as github from "@actions/github";
 import * as core from "@actions/core";
 import { PullRequestEvent, WebhookEvent } from "@octokit/webhooks-types";
@@ -6,6 +6,7 @@ import { PullRequestEvent, WebhookEvent } from "@octokit/webhooks-types";
 const context = github.context;
 
 export async function getTags() {
+  await exec("git", ["fetch", "--tags"])
   const output = await getExecOutput("git", ["tag", "-l"])
 
   if (output.exitCode != 0) {
@@ -54,13 +55,15 @@ export async function tagNewVersion(githubToken: string, version: string) {
   const owner = pr.repository.owner
   const repo = pr.repository.name
 
-  pr.pull_request.head.sha
+  const target_sha = pr.action === "closed"
+  ? pr.pull_request.head.sha
+  : GITHUB_SHA;
 
   const tagCreateResponse = await octokit.rest.git.createTag({
     ...context.repo,
     tag: version,
     message: pr.pull_request.title,
-    object: GITHUB_SHA,
+    object: target_sha,
     type: "commit",
   });
 
@@ -69,4 +72,40 @@ export async function tagNewVersion(githubToken: string, version: string) {
     ref: `refs/tags/${version}`,
     sha: tagCreateResponse.data.sha,
   });
+}
+
+const ignoredActions = ["assigned",
+"unassigned",
+"unlabeled",
+"edited",
+"review_requested",
+"review_request_removed",
+"auto_merge_disabled",
+"auto_merge_enabled",
+"milestoned",
+"demilestoned",
+"locked",
+"unlocked",
+];
+
+export function shouldProceed(tagPrerelease: boolean) {
+  if (ignoredActions.includes(github.context.action)) {
+    console.log("This action is not relevant to tagging, skipping");
+    return false;
+  }
+
+  if (github.context.action != 'closed' && !tagPrerelease) {
+    console.log("This PR is still open, skipping tagging");
+    console.log("To tag PRs that are still open, set the 'tag-prerelease' input to true");
+    return false;
+  }
+
+  const pr = getCurrentPR()
+
+  if (github.context.action == 'closed' && !pr.merged) {
+    console.log("This PR is closed, but not merged, skipping tagging");
+    return false;
+  }
+
+  return true;
 }
