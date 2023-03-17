@@ -68,3 +68,4 @@ typings/
 
 # Dist folder
 dist/
+dist/index.js
