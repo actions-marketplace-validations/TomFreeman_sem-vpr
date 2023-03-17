@@ -38,9 +38,9 @@ export function getLabels() {
   return pr.labels.map(label => label.name)
 }
 
-export async function tagNewVersion(version: string) {
-  const { GITHUB_TOKEN, GITHUB_SHA } = process.env;
-  if (!GITHUB_TOKEN) {
+export async function tagNewVersion(githubToken: string, version: string) {
+  const { GITHUB_SHA } = process.env;
+  if (!githubToken) {
     throw new Error("GITHUB_TOKEN is not set");
   }
 
@@ -48,7 +48,7 @@ export async function tagNewVersion(version: string) {
     throw new Error("GITHUB_SHA is not set");
   }
 
-  const octokit = github.getOctokit(GITHUB_TOKEN);
+  const octokit = github.getOctokit(githubToken);
 
   const pr = context.payload as PullRequestEvent
   const owner = pr.repository.owner

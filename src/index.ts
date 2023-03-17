@@ -26,6 +26,7 @@ async function run() {
     // Get the tags from the git history
     const tags = await getTags();
     const prefix = core.getInput('prefix');
+    const githubToken = core.getInput('github-token');
     const branch = getBranchName();
     const settings = buildSettings(
       getLabels(),
@@ -38,7 +39,7 @@ async function run() {
     const newVersion = await versioner.calculateNextVersion();
 
     // Tag the new version
-    await tagNewVersion(newVersion);
+    await tagNewVersion(githubToken, newVersion);
   } catch (err) {
     console.log("Error: ", err)
     core.setFailed((err as Error).message);
