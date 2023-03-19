@@ -13,7 +13,8 @@ git config user.name github-actions
 git config user.email github-actions@github.com
 
 
-git add dist/index.js --force
-
 git switch -C "v$major"
-git push -u origin "v$major"
+git add dist/index.js --force
+git commit -m "Build for release $current"
+
+git push -u origin "v$major" --force
