@@ -11,6 +11,8 @@ on:
 jobs:
   create-branch:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.token }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -26,4 +28,5 @@ jobs:
 
       - name: Create release branch
         run: ./.github/workflows/create-release-branch.sh
+
 
