@@ -1,6 +1,8 @@
 name: Push Release Branch
 
 on:
+  workflow_dispatch:
+
   push:
     tags:
       - v*.*.*
@@ -24,4 +26,4 @@ jobs:
 
       - name: Create release branch
         run: ./.github/workflows/create-release-branch.sh
-        
+
