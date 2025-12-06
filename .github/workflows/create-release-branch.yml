@@ -14,7 +14,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.personal_token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.personal_token }}
 
